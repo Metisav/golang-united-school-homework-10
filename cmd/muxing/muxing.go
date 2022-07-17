@@ -20,11 +20,42 @@ main function reads host/port from env just for an example, flavor it following 
 // Start /** Starts the web server listener on given host and port.
 func Start(host string, port int) {
 	router := mux.NewRouter()
+	router.HandleFunc("/name/{PARAM}", getParamFunc).Methods(http.MethodGet)
+	router.HandleFunc("/bad", getBadFunc).Methods(http.MethodGet)
+	router.HandleFunc("/data", postParamFunc).Methods(http.MethodPost)
+	router.HandleFunc("/headers", postHeaderFunc).Methods(http.MethodPost)
+	router.HandleFunc("/", anyNotDefined)
 
 	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), router); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getParamFunc(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Hello, "+params["PARAM"]+"!")
+}
+
+func getBadFunc(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
+func postParamFunc(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "I got message:\n"+r.FormValue("PARAM"))
+}
+
+func postHeaderFunc(w http.ResponseWriter, r *http.Request) {
+	a, _ := strconv.Atoi(r.Header.Get("a"))
+	b, _ := strconv.Atoi(r.Header.Get("b"))
+	w.Header().Add("a+b", strconv.Itoa(a+b))
+	w.WriteHeader(http.StatusOK)
+}
+
+func anyNotDefined(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 //main /** starts program, gets HOST:PORT param and calls Start func.
