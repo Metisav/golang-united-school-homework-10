@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -43,8 +44,9 @@ func getBadFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 func postParamFunc(w http.ResponseWriter, r *http.Request) {
+	bodyData, _ := io.ReadAll(r.Body)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "I got message:\n"+r.FormValue("PARAM"))
+	fmt.Fprint(w, "I got message:\n"+string(bodyData))
 }
 
 func postHeaderFunc(w http.ResponseWriter, r *http.Request) {
